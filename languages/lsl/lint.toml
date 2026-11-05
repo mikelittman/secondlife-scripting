@@ -1,0 +1,31 @@
+# Set a rule's severity to "error", "warning", "info", or "off".
+
+[rules.unknown-function]
+severity = "warning"
+
+[rules.deprecated-function]
+severity = "warning"
+
+[rules.deprecated-constant]
+severity = "warning"
+
+[rules.arity]
+severity = "error"
+
+[rules.unknown-event]
+severity = "warning"
+
+[rules.deprecated-event]
+severity = "warning"
+
+[rules.event-arity]
+severity = "error"
+
+[rules.empty-state]
+severity = "warning"
+
+[rules.missing-default]
+severity = "warning"
+
+[rules.assignment-in-condition]
+severity = "warning"

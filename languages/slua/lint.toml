@@ -1,0 +1,17 @@
+[rules.unknown-function]
+severity = "warning"
+
+[rules.deprecated-function]
+severity = "warning"
+
+[rules.removed-function]
+severity = "warning"
+
+[rules.removed-constant]
+severity = "warning"
+
+[rules.arity]
+severity = "error"
+
+[rules.unknown-event]
+severity = "warning"

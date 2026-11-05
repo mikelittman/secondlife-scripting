@@ -1,0 +1,52 @@
+==================
+default state
+==================
+
+default {
+    state_entry() {
+        llOwnerSay("hi");
+    }
+}
+
+---
+
+(script
+  (state_definition
+    (identifier)
+    (event_handler
+      (identifier)
+      (parameter_list)
+      (compound_statement
+        (statement
+          (expression_statement
+            (call_expression
+              (identifier)
+              (string))))))))
+
+==================
+vector and rotation
+==================
+
+vector v = <1, 2, 3>;
+rotation r = <0, 0, 0, 1>;
+
+---
+
+(script
+  (global
+    (global_variable
+      (type)
+      (identifier)
+      (vector_literal
+        (number)
+        (number)
+        (number))))
+  (global
+    (global_variable
+      (type)
+      (identifier)
+      (quaternion_literal
+        (number)
+        (number)
+        (number)
+        (number)))))

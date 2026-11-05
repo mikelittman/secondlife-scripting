@@ -1,0 +1,23 @@
+id = "lsl-slua"
+name = "LSL and SLua"
+version = "0.1.0"
+schema_version = 1
+description = "Highlighting and language server for Linden Scripting Language and SLua."
+repository = "https://github.com/mikelittman/secondlife-scripting"
+
+[grammars.lsl]
+repository = "https://github.com/mikelittman/secondlife-scripting"
+rev = "main"
+path = "languages/lsl"
+
+[grammars.luau]
+repository = "https://github.com/tree-sitter-grammars/tree-sitter-luau"
+rev = "a8914d6c1fc5131f8e1c13f769fa704c9f5eb02f"
+
+[language_servers.lsl-tools]
+name = "LSL Tools"
+languages = ["LSL", "SLua"]
+
+[language_servers.lsl-tools.language_ids]
+LSL = "lsl"
+SLua = "slua"

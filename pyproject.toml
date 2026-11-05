@@ -1,0 +1,24 @@
+[project]
+name = "lsl-dev-tools"
+version = "0.1.0"
+description = "Highlighting, parsing, linting, and formatting for LSL and SLua"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "lsl-dev-tools" }]
+
+[project.scripts]
+lsl-tools = "lsl_tools.cli:main"
+
+[project.optional-dependencies]
+sync = ["pyyaml>=6"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["lsl_tools*"]
+
+[tool.setuptools.package-data]
+lsl_tools = ["data/*.json"]

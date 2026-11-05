@@ -1,0 +1,34 @@
+[[language]]
+name = "lsl"
+scope = "source.lsl"
+file-types = ["lsl"]
+injection-regex = "lsl"
+comment-token = "//"
+block-comment-tokens = { start = "/*", end = "*/" }
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["lsl-tools"]
+grammar = "lsl"
+
+[[grammar]]
+name = "lsl"
+source = { git = "https://github.com/mikelittman/secondlife-scripting", rev = "main", subpath = "languages/lsl" }
+
+[[language]]
+name = "slua"
+scope = "source.slua"
+file-types = ["slua"]
+injection-regex = "slua"
+comment-token = "--"
+block-comment-tokens = { start = "--[[", end = "]]" }
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["lsl-tools"]
+grammar = "luau"
+
+[[grammar]]
+name = "luau"
+source = { git = "https://github.com/tree-sitter-grammars/tree-sitter-luau", rev = "a8914d6c1fc5131f8e1c13f769fa704c9f5eb02f" }
+
+[language-server.lsl-tools]
+command = "lsl-tools"
+args = ["lsp"]
+

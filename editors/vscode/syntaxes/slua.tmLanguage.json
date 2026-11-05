@@ -1,0 +1,79 @@
+{
+  "name": "SLua",
+  "scopeName": "source.slua",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#keyword"
+    },
+    {
+      "include": "#module"
+    },
+    {
+      "include": "#constant"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.block.slua",
+          "begin": "--\\[(=*)\\[",
+          "end": "\\]\\1\\]"
+        },
+        {
+          "name": "comment.line.slua",
+          "match": "--.*$"
+        }
+      ]
+    },
+    "string": {
+      "patterns": [
+        {
+          "name": "string.quoted.other.slua",
+          "begin": "`",
+          "end": "`"
+        },
+        {
+          "name": "string.quoted.double.slua",
+          "begin": "\\[(=*)\\[",
+          "end": "\\]\\1\\]"
+        },
+        {
+          "name": "string.quoted.double.slua",
+          "begin": "\"",
+          "end": "\""
+        },
+        {
+          "name": "string.quoted.single.slua",
+          "begin": "'",
+          "end": "'"
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.slua",
+      "match": "\\b(?:0[xXbB][\\dA-Fa-f_]+|\\d[\\d_]*(?:\\.\\d[\\d_]*)?(?:[eE][+-]?\\d[\\d_]*)?)\\b"
+    },
+    "keyword": {
+      "match": "\\b(?:function|continue|elseif|export|repeat|typeof|return|false|write|break|const|local|until|while|else|then|true|read|not|for|and|end|nil|do|in|if|or)\\b",
+      "name": "keyword.control.slua"
+    },
+    "module": {
+      "match": "\\b(?:quaternion|coroutine|llcompat|LLTimers|LLEvents|llbase64|integer|lljson|buffer|llprim|vector|string|debug|bit32|table|utf8|uuid|math|ll|os)\\b",
+      "name": "support.class.slua"
+    },
+    "constant": {
+      "name": "constant.language.slua",
+      "match": "\\b[A-Z][A-Z0-9_]*\\b"
+    }
+  }
+}

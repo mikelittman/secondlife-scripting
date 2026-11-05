@@ -1,0 +1,21 @@
+{
+  "grammars": [
+    {
+      "name": "lsl",
+      "camelcase": "Lsl",
+      "scope": "source.lsl",
+      "path": ".",
+      "file-types": ["lsl"],
+      "highlights": "highlights.scm",
+      "injection-regex": "^lsl$"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Tree-sitter grammar for Linden Scripting Language",
+    "links": {
+      "repository": "https://github.com/secondlife/tailslide"
+    }
+  }
+}

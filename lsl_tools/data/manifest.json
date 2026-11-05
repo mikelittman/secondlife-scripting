@@ -1,0 +1,20 @@
+{
+  "sources": {
+    "lsl-definitions": {
+      "repository": "https://github.com/secondlife/lsl-definitions",
+      "revision": "77cca2b0ee676c46dab7146a2cf63692cc6b91fe"
+    },
+    "tailslide": {
+      "repository": "https://github.com/secondlife/tailslide",
+      "revision": "f950e066863f215c2d22c66fc9498b12d4387b7f"
+    },
+    "slua": {
+      "repository": "https://github.com/secondlife/slua",
+      "revision": "af1379e6fc30d66ba991f15213f2d48d65175e55"
+    },
+    "tree-sitter-luau": {
+      "repository": "https://github.com/tree-sitter-grammars/tree-sitter-luau",
+      "revision": "a8914d6c1fc5131f8e1c13f769fa704c9f5eb02f"
+    }
+  }
+}

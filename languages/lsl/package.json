@@ -1,0 +1,24 @@
+{
+  "name": "tree-sitter-lsl",
+  "version": "0.1.0",
+  "description": "Tree-sitter grammar for Linden Scripting Language",
+  "main": "bindings/node",
+  "license": "MIT",
+  "dependencies": {
+    "node-addon-api": "^8.3.0"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "0.24.7"
+  },
+  "scripts": {
+    "generate": "tree-sitter generate",
+    "test": "tree-sitter test"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.lsl",
+      "file-types": ["lsl"],
+      "highlights": ["highlights.scm"]
+    }
+  ]
+}

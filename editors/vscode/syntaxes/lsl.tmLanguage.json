@@ -1,0 +1,80 @@
+{
+  "name": "LSL",
+  "scopeName": "source.lsl",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#keyword"
+    },
+    {
+      "include": "#type"
+    },
+    {
+      "include": "#function"
+    },
+    {
+      "include": "#event"
+    },
+    {
+      "include": "#constant"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.lsl",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.lsl",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.lsl",
+      "begin": "L?\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.lsl"
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.lsl",
+      "match": "\\b(?:0[xX][0-9A-Fa-f]+|\\d+\\.\\d*|\\.\\d+|\\d+)(?:[eE][+-]?\\d+)?[fF]?\\b"
+    },
+    "keyword": {
+      "match": "\\b(?:default|return|state|event|while|print|jump|else|for|do|if)\\b",
+      "name": "keyword.control.lsl"
+    },
+    "type": {
+      "match": "\\b(?:quaternion|rotation|integer|string|vector|float|list|key)\\b",
+      "name": "storage.type.lsl"
+    },
+    "function": {
+      "name": "support.function.lsl",
+      "match": "\\bll[A-Z][A-Za-z0-9]*\\b"
+    },
+    "event": {
+      "match": "\\b(?:experience_permissions_denied|experience_permissions|land_collision_start|run_time_permissions|transaction_result|land_collision_end|not_at_rot_target|collision_start|land_collision|collision_end|at_rot_target|http_response|not_at_target|linkset_data|http_request|final_damage|moving_start|link_message|game_control|state_entry|remote_data|path_update|touch_start|object_rez|state_exit|dataserver|moving_end|no_sensor|at_target|collision|on_damage|touch_end|on_death|control|changed|on_rez|sensor|listen|attach|timer|money|touch|email)\\b",
+      "name": "entity.name.function.event.lsl"
+    },
+    "constant": {
+      "name": "constant.language.lsl",
+      "match": "\\b[A-Z][A-Z0-9_]+\\b"
+    }
+  }
+}

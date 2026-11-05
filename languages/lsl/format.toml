@@ -1,0 +1,7 @@
+# Formatting rules for LSL. The formatter reads this file.
+# brace_style is "same_line" or "next_line".
+
+indent_width = 4
+use_tabs = false
+brace_style = "same_line"
+blank_lines_between_items = 1

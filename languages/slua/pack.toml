@@ -1,0 +1,12 @@
+id = "slua"
+name = "SLua"
+scope = "source.slua"
+grammar = "luau"
+extensions = ["slua"]
+line_comment = "--"
+block_comment = ["--[[", "]]"]
+tab_size = 4
+injection_regex = "slua"
+description = "Second Life SLua (Luau syntax plus the Second Life libraries)"
+grammar_repository = "https://github.com/tree-sitter-grammars/tree-sitter-luau"
+grammar_rev = "a8914d6c1fc5131f8e1c13f769fa704c9f5eb02f"

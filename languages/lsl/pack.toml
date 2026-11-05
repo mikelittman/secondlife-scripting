@@ -1,0 +1,10 @@
+id = "lsl"
+name = "LSL"
+scope = "source.lsl"
+grammar = "lsl"
+extensions = ["lsl"]
+line_comment = "//"
+block_comment = ["/*", "*/"]
+tab_size = 4
+injection_regex = "lsl"
+description = "Linden Scripting Language"

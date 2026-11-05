@@ -1,0 +1,51 @@
+{
+  "name": "lsl-slua",
+  "displayName": "LSL and SLua",
+  "description": "Syntax highlighting for Linden Scripting Language and SLua.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "lsl",
+        "aliases": [
+          "LSL",
+          "lsl"
+        ],
+        "extensions": [
+          ".lsl"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "slua",
+        "aliases": [
+          "SLua",
+          "slua"
+        ],
+        "extensions": [
+          ".slua"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "lsl",
+        "scopeName": "source.lsl",
+        "path": "./syntaxes/lsl.tmLanguage.json"
+      },
+      {
+        "language": "slua",
+        "scopeName": "source.slua",
+        "path": "./syntaxes/slua.tmLanguage.json"
+      }
+    ]
+  }
+}
