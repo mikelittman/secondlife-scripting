@@ -32,13 +32,14 @@ impl zed::Extension for LslSluaExtension {
             .iter()
             .find(|(name, _)| name == "HOME")
             .map(|(_, value)| value.clone());
-        let pythonpath =
-            env::join_paths(package_roots(home.as_deref())).map_err(|error| error.to_string())?;
-        upsert_env(
-            &mut env,
-            "PYTHONPATH",
-            pythonpath.to_string_lossy().into_owned(),
-        );
+        // std::env::join_paths is unimplemented on Wasm and returns
+        // "not supported on this platform yet".
+        let pythonpath = package_roots(home.as_deref())
+            .into_iter()
+            .map(|path| path.to_string_lossy().into_owned())
+            .collect::<Vec<_>>()
+            .join(env_path_separator());
+        upsert_env(&mut env, "PYTHONPATH", pythonpath);
         let python = worktree
             .which("python3")
             .unwrap_or_else(|| "python3".to_string());
