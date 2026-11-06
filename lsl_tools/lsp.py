@@ -11,7 +11,7 @@ import json
 import sys
 from dataclasses import dataclass, field
 
-from lsl_tools.model import Node, ParseResult, Token
+from lsl_tools.model import Diagnostic, Node, ParseResult, Span, Token
 from lsl_tools.registry import Language, language_for_id
 from lsl_tools.symbols import lsl_symbols, slua_symbols
 
@@ -57,7 +57,10 @@ class Server:
             self.documents.pop(uri, None)
             return None
         if method == "textDocument/formatting":
-            return _result(request_id, self._format(params))
+            edits, error = self._format(params)
+            if error:
+                return _error(request_id, -32603, error)
+            return _result(request_id, edits)
         if method == "textDocument/hover":
             return _result(request_id, self._hover(params))
         if method == "textDocument/documentSymbol":
@@ -78,25 +81,53 @@ class Server:
             text = params["contentChanges"][0]["text"]
             language_id = self.documents.get(uri, {}).get("languageId", "")
         language = language_for_id(language_id)
-        parsed = language.parse(text) if language else None
-        self.documents[uri] = {"text": text, "languageId": language_id, "language": language, "parsed": parsed}
+        parsed = None
+        failure = ""
+        if language is not None:
+            try:
+                parsed = language.parse(text)
+            except Exception as exc:
+                failure = f"parser failed: {exc}"
+        self.documents[uri] = {
+            "text": text,
+            "languageId": language_id,
+            "language": language,
+            "parsed": parsed,
+            "failure": failure,
+        }
 
     def _publish(self, params: dict) -> None:
         uri = params["textDocument"]["uri"]
         record = self.documents.get(uri)
-        if not record or record["parsed"] is None:
+        if not record:
             return
-        diagnostics = list(record["parsed"].errors)
-        diagnostics.extend(record["language"].lint(record["parsed"]))
+        if record.get("failure"):
+            span = Span(1, 1, 1, 1, 0, 0)
+            diagnostics = [Diagnostic("parser", "error", record["failure"], span)]
+        elif record["parsed"] is None:
+            return
+        else:
+            diagnostics = list(record["parsed"].errors)
+            diagnostics.extend(record["language"].lint(record["parsed"]))
         (self.notify or _notify)(
             "textDocument/publishDiagnostics",
             {"uri": uri, "diagnostics": [item.lsp() for item in diagnostics]},
         )
 
-    def _format(self, params: dict) -> list[dict]:
+    def _format(self, params: dict) -> tuple[list[dict], str]:
         record = self._record(params)
-        if record is None or record["parsed"] is None or record["parsed"].errors:
-            return []
+        if record is None or record["language"] is None:
+            return [], "document is not open"
+        if record.get("failure"):
+            return [], record["failure"]
+        if record["parsed"] is None:
+            return [], "document is not open"
+        if record["parsed"].errors:
+            first = record["parsed"].errors[0]
+            return [], (
+                f"not formatted, source has syntax errors: "
+                f"{first.span.start_line}:{first.span.start_col}: {first.message}"
+            )
         formatted = record["language"].format(record["parsed"])
         lines = record["text"].split("\n")
         end_line = max(len(lines) - 1, 0)
@@ -109,7 +140,7 @@ class Server:
                 },
                 "newText": formatted,
             }
-        ]
+        ], ""
 
     def _hover(self, params: dict) -> dict | None:
         record = self._record(params)
@@ -180,7 +211,7 @@ def _capabilities() -> dict:
                 "full": True,
             },
         },
-        "serverInfo": {"name": "lsl-tools", "version": "0.1.2"},
+        "serverInfo": {"name": "lsl-tools", "version": "0.1.3"},
     }
 
 

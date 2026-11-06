@@ -4,7 +4,8 @@
  * The shape follows Tailslide's lslmini.y (the Second Life parser). The editor
  * grammar is intentionally a little more permissive: a file may be missing its
  * default state, and a for-loop condition may be absent, so highlighting still
- * works while the user is typing. The Python parser in lsl_tools is stricter.
+ * works while the user is typing. A for-loop may also declare its counter
+ * (`for (integer i = 0; i < n; ++i)`), which the Second Life compiler accepts.
  */
 
 const PREC = {
@@ -125,13 +126,22 @@ module.exports = grammar({
       seq(
         "for",
         "(",
-        optional(field("init", $._expr_list)),
+        optional(
+          choice(field("declaration", $.for_declaration), field("init", $._expr_list)),
+        ),
         ";",
         optional(field("condition", $._expression)),
         ";",
         optional(field("step", $._expr_list)),
         ")",
         field("body", $.statement),
+      ),
+
+    for_declaration: ($) =>
+      seq(
+        field("type", $.type),
+        field("name", $.identifier),
+        optional(seq("=", field("value", $._expression))),
       ),
 
     _expr_list: ($) => exprList($._expression),

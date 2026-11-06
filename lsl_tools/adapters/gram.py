@@ -38,7 +38,7 @@ class GramAdapter:
         lines = [
             'id = "lsl-slua"',
             'name = "LSL and SLua"',
-            'version = "0.1.2"',
+            'version = "0.1.3"',
             "schema_version = 1",
             'description = "Highlighting and language server for Linden Scripting Language and SLua."',
             'repository = "https://github.com/mikelittman/secondlife-scripting"',
@@ -71,7 +71,12 @@ class GramAdapter:
         comments = f'["{language.line_comment} "]'
         brackets = self._brackets(language.id)
         indent = ""
-        if language.id == "slua":
+        if language.id == "lsl":
+            indent = (
+                'increase_indent_pattern = "\\\\{\\\\s*(//.*|/\\\\*.*)?$|\\\\b(if|else|for|while|do)\\\\b[^;{}]*$"\n'
+                'decrease_indent_pattern = "^\\\\s*(\\\\}|else\\\\b)"\n'
+            )
+        elif language.id == "slua":
             indent = 'decrease_indent_pattern = "^\\\\s*(end|else|elseif|until)\\\\b"\n'
         return (
             f'name = "{language.name}"\n'

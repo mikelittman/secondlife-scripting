@@ -68,7 +68,7 @@ class ToolTests(unittest.TestCase):
                 "params": {"textDocument": {"uri": "file:///hello.lsl"}},
             }
         )
-        self.assertIn("state_entry()", formatted["result"][0]["newText"])
+        self.assertIn("    state_entry() {", formatted["result"][0]["newText"])
         hover = server.handle(
             {
                 "jsonrpc": "2.0",
@@ -81,6 +81,26 @@ class ToolTests(unittest.TestCase):
             }
         )
         self.assertIn("llOwnerSay", hover["result"]["contents"]["value"])
+        broken = server.handle(
+            {
+                "jsonrpc": "2.0",
+                "method": "textDocument/didChange",
+                "params": {
+                    "textDocument": {"uri": "file:///hello.lsl"},
+                    "contentChanges": [{"text": "default { state_entry() { $$$; } }"}],
+                },
+            }
+        )
+        self.assertIsNone(broken)
+        refused = server.handle(
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "textDocument/formatting",
+                "params": {"textDocument": {"uri": "file:///hello.lsl"}},
+            }
+        )
+        self.assertIn("syntax errors", refused["error"]["message"])
 
 
 if __name__ == "__main__":

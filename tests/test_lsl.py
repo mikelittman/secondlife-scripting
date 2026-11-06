@@ -85,6 +85,56 @@ class LslParserTests(unittest.TestCase):
         self.assertIn("vector v = <1.0, 2.0, 3.0>;", once)
         self.assertIn("state other;", once)
 
+    def test_format_reindents_like_a_javascript_formatter(self):
+        source = """
+integer g=1;
+string greet(string name){
+return "Hello, "+name;
+}
+default{
+state_entry(){
+llOwnerSay(greet("world"));
+vector v=<1,2,3>;
+if(v.x>0){
+state other;
+}else if(v.x<0){
+llSay(0,"no");
+}else{
+llSay(0,"zero");
+}
+for(integer i=0;i<3;++i){
+llOwnerSay((string)i);
+}
+for(i=0,g=1;i<2;i++,g++){
+llOwnerSay((string)i);
+}
+}
+touch_start(integer n){@again;jump again;}
+}
+state other{state_entry(){llSay(0,(string)g);}}
+"""
+        result = parse(source)
+        self.assertEqual(result.errors, [])
+        formatted = format_source(result, Style())
+        self.assertEqual(formatted, format_source(parse(formatted), Style()))
+        self.assertIn("    return \"Hello, \" + name;", formatted)
+        self.assertIn("        vector v = <1, 2, 3>;", formatted)
+        self.assertIn("        } else if (v.x < 0) {", formatted)
+        self.assertIn("        for (integer i = 0; i < 3; ++i) {", formatted)
+        self.assertIn("        for (i = 0, g = 1; i < 2; i++, g++) {", formatted)
+        self.assertIn("            llOwnerSay((string)i);", formatted)
+
+    def test_format_keeps_global_variables_compact(self):
+        source = "integer a=1;\n\n\nfloat b = 2.0;\nkey id=NULL_KEY;\n\nstring greet(string name) {\nreturn name;\n}\n\ndefault {\nstate_entry() {\nllOwnerSay(greet((string)a));\n}\n}\n"
+        formatted = format_source(parse(source), Style())
+        self.assertIn("integer a = 1;\nfloat b = 2.0;\nkey id = NULL_KEY;\n\nstring greet", formatted)
+        self.assertEqual(formatted, format_source(parse(formatted), Style()))
+
+    def test_unexpected_token_does_not_crash(self):
+        result = parse("default { state_entry() { $$$; } }\n")
+        self.assertTrue(result.errors)
+        self.assertEqual(format_source(result, Style()), "default { state_entry() { $$$; } }\n")
+
     def test_format_keeps_a_comment_inside_an_expression(self):
         source = "default { state_entry() { llSay(0, /* channel */ \"x\"); } }\n"
         formatted = format_source(parse(source), Style())

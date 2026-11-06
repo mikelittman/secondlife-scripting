@@ -50,3 +50,45 @@ rotation r = <0, 0, 0, 1>;
         (number)
         (number)
         (number)))))
+
+==================
+for loop declaration
+==================
+
+default {
+    state_entry() {
+        for (integer i = 0; i < 3; ++i) {
+            llOwnerSay((string)i);
+        }
+    }
+}
+
+---
+
+(script
+  (state_definition
+    (identifier)
+    (event_handler
+      (identifier)
+      (parameter_list)
+      (compound_statement
+        (statement
+          (for_statement
+            (for_declaration
+              (type)
+              (identifier)
+              (number))
+            (binary_expression
+              (identifier)
+              (number))
+            (update_expression
+              (identifier))
+            (statement
+              (compound_statement
+                (statement
+                  (expression_statement
+                    (call_expression
+                      (identifier)
+                      (cast_expression
+                        (type)
+                        (identifier)))))))))))))

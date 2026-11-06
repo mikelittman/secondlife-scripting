@@ -4,6 +4,9 @@ path_suffixes = ["lsl"]
 line_comments = ["// "]
 tab_size = 4
 hard_tabs = false
+# Used when the tree is incomplete, the same way a JS editor indents after `{` or `if`.
+increase_indent_pattern = "\\{\\s*(//.*|/\\*.*)?$|\\b(if|else|for|while|do)\\b[^;{}]*$"
+decrease_indent_pattern = "^\\s*(\\}|else\\b)"
 autoclose_before = ";:.,=}])>"
 brackets = [
   { start = "{", end = "}", close = true, newline = true, not_in = ["comment", "string"] },

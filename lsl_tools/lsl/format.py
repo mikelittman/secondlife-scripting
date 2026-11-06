@@ -55,7 +55,7 @@ class Printer:
     def print_script(self, node: Node) -> str:
         items = node.get("globals", []) + node.get("states", [])
         for index, item in enumerate(items):
-            if index and self.style.blank_lines_between_items:
+            if index and self.style.blank_lines_between_items and not self._packed_globals(items[index - 1], item):
                 self._blank(self.style.blank_lines_between_items)
             self._item(item)
             if item.kind == "state_definition":
@@ -70,6 +70,9 @@ class Printer:
         if text and not text.endswith("\n"):
             text += "\n"
         return text
+
+    def _packed_globals(self, previous: Node, item: Node) -> bool:
+        return previous.kind == "global_variable" and item.kind == "global_variable"
 
     def _item(self, node: Node) -> None:
         self._leading(node)
@@ -158,7 +161,11 @@ class Printer:
             self.write(");")
         elif kind == "for_statement":
             self.write("for (")
-            self._exprs(node.get("init", []))
+            declaration = node.get("declaration")
+            if declaration is not None:
+                self._declaration(declaration.get("type_name"), declaration.get("name"), declaration.get("init"))
+            else:
+                self._exprs(node.get("init", []))
             self.write(";")
             condition = node.get("condition")
             if condition is not None and condition.kind != "error":
@@ -183,7 +190,12 @@ class Printer:
         alternative = node.get("alternative")
         if alternative is None:
             return
-        if node.get("consequence").kind == "compound" and self.style.brace_style == "same_line":
+        same_line = self.style.brace_style == "same_line"
+        if alternative.kind == "if_statement" and same_line:
+            self.write(" else ")
+            self._statement(alternative)
+            return
+        if node.get("consequence").kind == "compound" and same_line:
             self.write(" else")
         else:
             self.newline()

@@ -233,19 +233,10 @@ class Parser:
             semi = self._expect(";")
             return self._attach(self._node("state_statement", start.span, semi.span, name=name.text), leading)
         if self._is("type"):
-            type_tok = self._advance()
-            name = self._expect_kind("identifier")
-            init = self._parse_expression() if self._eat_if("=") else None
+            declaration = self._parse_declaration()
             semi = self._expect(";")
-            node = self._node(
-                "declaration",
-                type_tok.span,
-                semi.span,
-                type_name=type_tok.text,
-                name=name.text,
-                init=init,
-            )
-            return self._attach(node, leading)
+            declaration.span = Span.merge(declaration.span, semi.span)
+            return self._attach(declaration, leading)
         if self._starts_expression():
             expr = self._parse_expression()
             semi = self._expect(";")
@@ -254,6 +245,20 @@ class Parser:
         self._sync()
         end = self._previous_span(start.span)
         return self._attach(self._error_node(Span.merge(start.span, end), "unexpected token"), leading)
+
+    def _parse_declaration(self) -> Node:
+        type_tok = self._advance()
+        name = self._expect_kind("identifier")
+        init = self._parse_expression() if self._eat_if("=") else None
+        end = init.span if init is not None else name.span
+        return self._node(
+            "declaration",
+            type_tok.span,
+            end,
+            type_name=type_tok.text,
+            name=name.text,
+            init=init,
+        )
 
     def _parse_if(self) -> Node:
         start = self._advance()
@@ -297,7 +302,14 @@ class Parser:
     def _parse_for(self) -> Node:
         start = self._advance()
         self._expect("(")
-        init = [] if self._is(";") else self._parse_expr_list()
+        # Second Life accepts `for (integer i = 0; i < n; ++i)`. The initializer
+        # is one declaration or a comma-separated expression list, not both.
+        declaration = None
+        init: list[Node] = []
+        if self._is("type"):
+            declaration = self._parse_declaration()
+        elif not self._is(";"):
+            init = self._parse_expr_list()
         self._expect(";")
         if self._is(";"):
             self._error("for loop requires a condition")
@@ -308,7 +320,16 @@ class Parser:
         step = [] if self._is(")") else self._parse_expr_list()
         self._expect(")")
         body = self._parse_statement() or self._error_node(condition.span, "expected a statement")
-        return self._node("for_statement", start.span, body.span, init=init, condition=condition, step=step, body=body)
+        return self._node(
+            "for_statement",
+            start.span,
+            body.span,
+            declaration=declaration,
+            init=init,
+            condition=condition,
+            step=step,
+            body=body,
+        )
 
     def _parse_expr_list(self) -> list[Node]:
         items = [self._parse_expression()]
@@ -518,6 +539,14 @@ class Parser:
             return self._advance()
         self._error(f"expected {kind}")
         return self._peek()
+
+    def _previous_span(self, fallback: Span) -> Span:
+        index = self.i - 1
+        while index >= 0 and self.tokens[index].kind == "comment":
+            index -= 1
+        if index >= 0:
+            return self.tokens[index].span
+        return fallback
 
     def _sync(self) -> None:
         guard = self.i

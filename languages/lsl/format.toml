@@ -1,5 +1,9 @@
 # Formatting rules for LSL. The formatter reads this file.
-# brace_style is "same_line" or "next_line".
+# brace_style is "same_line" (like JavaScript) or "next_line".
+# The formatter always reindents, puts spaces around operators and after
+# commas, and keeps `else` on the same line as `}`.
+# blank_lines_between_items separates functions and states. Consecutive
+# global variables stay on adjacent lines.
 
 indent_width = 4
 use_tabs = false
