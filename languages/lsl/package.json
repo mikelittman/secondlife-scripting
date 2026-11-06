@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-lsl",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Tree-sitter grammar for Linden Scripting Language",
   "main": "bindings/node",
   "license": "MIT",

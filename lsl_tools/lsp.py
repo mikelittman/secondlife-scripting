@@ -180,7 +180,7 @@ def _capabilities() -> dict:
                 "full": True,
             },
         },
-        "serverInfo": {"name": "lsl-tools", "version": "0.1.0"},
+        "serverInfo": {"name": "lsl-tools", "version": "0.1.1"},
     }
 
 
