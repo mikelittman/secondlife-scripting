@@ -67,6 +67,28 @@ export type Id = string
         self.assertIn('ll.OwnerSay(greet("world"))', once)
         self.assertIn("local function greet(name: string): string", once)
 
+    def test_completion_lists_ll_functions(self):
+        from lsl_tools.complete import complete
+
+        items = complete("slua", "local value = ll.Ow", 0, len("local value = ll.Ow"))
+        labels = {item["label"] for item in items}
+        self.assertIn("OwnerSay", labels)
+        self.assertNotIn("Say", labels)
+        self.assertNotIn("SetTimerEvent", labels)
+        owner = next(item for item in items if item["label"] == "OwnerSay")
+        self.assertIn("msg: string", owner["detail"])
+        self.assertEqual(owner["tags"], [1])
+        all_ll = complete("slua", "ll.", 0, len("ll."))
+        all_labels = {item["label"] for item in all_ll}
+        self.assertIn("Say", all_labels)
+        self.assertNotIn("SetTimerEvent", all_labels)
+        modules = complete("slua", "ll", 0, 2)
+        self.assertIn("ll", {item["label"] for item in modules})
+        events = complete("slua", "LLEvents:", 0, len("LLEvents:"))
+        self.assertIn("on", {item["label"] for item in events})
+        lsl = complete("lsl", "llOw", 0, 4)
+        self.assertIn("llOwnerSay", {item["label"] for item in lsl})
+
     def test_type_and_typeof_are_calls(self):
         source = """
 local kind = type(vector(1, 2, 3))

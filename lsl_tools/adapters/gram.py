@@ -38,7 +38,7 @@ class GramAdapter:
         lines = [
             'id = "lsl-slua"',
             'name = "LSL and SLua"',
-            'version = "0.1.6"',
+            'version = "0.1.7"',
             "schema_version = 1",
             'description = "Highlighting and language server for Linden Scripting Language and SLua."',
             'repository = "https://github.com/mikelittman/secondlife-scripting"',

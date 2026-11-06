@@ -42,7 +42,7 @@ def _package() -> dict:
         "name": "lsl-slua",
         "displayName": "LSL and SLua",
         "description": "Syntax highlighting for Linden Scripting Language and SLua.",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "publisher": "local",
         "engines": {"vscode": "^1.85.0"},
         "categories": ["Programming Languages"],

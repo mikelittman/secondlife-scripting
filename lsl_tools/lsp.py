@@ -11,6 +11,7 @@ import json
 import sys
 from dataclasses import dataclass, field
 
+from lsl_tools.complete import complete
 from lsl_tools.model import Diagnostic, Node, ParseResult, Span, Token
 from lsl_tools.navigate import definition as find_definition
 from lsl_tools.navigate import highlights as find_highlights
@@ -64,6 +65,8 @@ class Server:
             if error:
                 return _error(request_id, -32603, error)
             return _result(request_id, edits)
+        if method == "textDocument/completion":
+            return _result(request_id, self._complete(params))
         if method == "textDocument/hover":
             return _result(request_id, self._hover(params))
         if method == "textDocument/definition":
@@ -150,6 +153,18 @@ class Server:
                 "newText": formatted,
             }
         ], ""
+
+    def _complete(self, params: dict) -> list[dict]:
+        record = self._record(params)
+        if record is None or record.get("language") is None:
+            return []
+        position = params.get("position") or {}
+        return complete(
+            record["language"].id,
+            record.get("text") or "",
+            position.get("line", 0),
+            position.get("character", 0),
+        )
 
     def _definition(self, params: dict) -> list[dict]:
         record = self._record(params)
@@ -261,12 +276,13 @@ def _capabilities() -> dict:
             "referencesProvider": True,
             "documentHighlightProvider": True,
             "documentSymbolProvider": True,
+            "completionProvider": {"triggerCharacters": [".", ":"], "resolveProvider": False},
             "semanticTokensProvider": {
                 "legend": {"tokenTypes": TOKEN_TYPES, "tokenModifiers": []},
                 "full": True,
             },
         },
-        "serverInfo": {"name": "lsl-tools", "version": "0.1.6"},
+        "serverInfo": {"name": "lsl-tools", "version": "0.1.7"},
     }
 
 
