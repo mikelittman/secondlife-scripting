@@ -90,7 +90,7 @@ class Parser:
         elif self._is("break", "continue"):
             token = self._advance()
             node = self._node(f"{token.text}_statement", token.span, token.span)
-        elif self._is("export") or (self._is("type") and self._ahead_kind() == "identifier"):
+        elif self._is_type_alias():
             node = self._type_alias()
         elif self._starts_expression():
             node = self._assignment_or_call()
@@ -561,6 +561,25 @@ class Parser:
             if depth:
                 self._advance()
         self._expect(close_text)
+
+    def _is_type_alias(self) -> bool:
+        # `type Name` and `export type Name`. `type(...)` and `typeof(...)` are calls.
+        if self._text() == "export":
+            return self._ahead_text(1) == "type" and self._ahead_kind_at(2) == "identifier"
+        return self._text() == "type" and self._ahead_kind() == "identifier"
+
+    def _ahead_kind_at(self, count: int) -> str:
+        index = self.i
+        seen = 0
+        while index < len(self.tokens):
+            if self.tokens[index].kind == "comment":
+                index += 1
+                continue
+            if seen == count:
+                return self.tokens[index].kind
+            seen += 1
+            index += 1
+        return "eof"
 
     def _starts_expression(self) -> bool:
         if self._peek().kind in {"identifier", "number", "string"}:

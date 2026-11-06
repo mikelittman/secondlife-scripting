@@ -67,6 +67,21 @@ export type Id = string
         self.assertIn('ll.OwnerSay(greet("world"))', once)
         self.assertIn("local function greet(name: string): string", once)
 
+    def test_type_and_typeof_are_calls(self):
+        source = """
+local kind = type(vector(1, 2, 3))
+local precise = typeof(kind)
+type Vec = vector
+export type Id = string
+local function describe(value)
+    return type(value)
+end
+"""
+        result = parse(source)
+        self.assertEqual(result.errors, [], [error.message for error in result.errors])
+        kinds = [node.kind for node in result.tree.get("body")]
+        self.assertEqual(kinds, ["local_declaration", "local_declaration", "type_alias", "type_alias", "local_function"])
+
     def test_lint(self):
         source = """
 LLEvents:on("touch_start", function()

@@ -1,4 +1,9 @@
-"""Lexer for SLua. The syntax is Luau, including long strings and interpolation."""
+"""Lexer for SLua. The syntax is Luau, including long strings and interpolation.
+
+`type`, `typeof`, and `export` are names, not reserved words. Luau only treats
+`type` as a keyword in `type Name = ...` and `export type Name = ...`. `type()`
+and `typeof()` are ordinary calls.
+"""
 
 from __future__ import annotations
 
@@ -12,7 +17,6 @@ KEYWORDS = {
     "else",
     "elseif",
     "end",
-    "export",
     "false",
     "for",
     "function",
@@ -26,8 +30,6 @@ KEYWORDS = {
     "return",
     "then",
     "true",
-    "type",
-    "typeof",
     "until",
     "while",
 }
