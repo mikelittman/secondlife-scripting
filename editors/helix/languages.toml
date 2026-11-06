@@ -16,7 +16,7 @@ source = { git = "https://github.com/mikelittman/secondlife-scripting", rev = "m
 [[language]]
 name = "slua"
 scope = "source.slua"
-file-types = ["slua"]
+file-types = ["slua", "luau"]
 injection-regex = "slua"
 comment-token = "--"
 block-comment-tokens = { start = "--[[", end = "]]" }

@@ -34,6 +34,7 @@ class NvimAdapter:
 
 
 def _lua() -> str:
+    filetypes = ", ".join(f'"{suffix}"' for language in languages().values() for suffix in language.extensions)
     return f"""-- Point Neovim at the LSL tree-sitter grammar and the shared language server.
 -- SLua reuses the upstream Luau parser; its queries add the Second Life libraries.
 
@@ -54,7 +55,7 @@ if not configs.lsl_tools then
   configs.lsl_tools = {{
     default_config = {{
       cmd = {{ "lsl-tools", "lsp" }},
-      filetypes = {{ "lsl", "slua" }},
+      filetypes = {{ {filetypes} }},
       root_dir = util.root_pattern(".git"),
       single_file_support = true,
     }},

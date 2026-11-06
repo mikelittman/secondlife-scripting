@@ -30,7 +30,8 @@
           "slua"
         ],
         "extensions": [
-          ".slua"
+          ".slua",
+          ".luau"
         ],
         "configuration": "./language-configuration.json"
       }

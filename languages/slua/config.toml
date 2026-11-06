@@ -1,6 +1,6 @@
 name = "SLua"
 grammar = "luau"
-path_suffixes = ["slua"]
+path_suffixes = ["slua", "luau"]
 line_comments = ["-- "]
 tab_size = 4
 hard_tabs = false

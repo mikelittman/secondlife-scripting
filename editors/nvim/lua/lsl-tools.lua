@@ -18,7 +18,7 @@ if not configs.lsl_tools then
   configs.lsl_tools = {
     default_config = {
       cmd = { "lsl-tools", "lsp" },
-      filetypes = { "lsl", "slua" },
+      filetypes = { "lsl", "slua", "luau" },
       root_dir = util.root_pattern(".git"),
       single_file_support = true,
     },

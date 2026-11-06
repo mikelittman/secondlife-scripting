@@ -90,6 +90,7 @@ def language_for_id(language_id: str) -> Language | None:
         "linden": "lsl",
         "lindenscript": "lsl",
         "slua": "slua",
+        "luau": "slua",
         "serverlua": "slua",
     }
     return languages().get(aliases.get(language_id.lower(), ""))
