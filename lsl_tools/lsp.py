@@ -12,6 +12,9 @@ import sys
 from dataclasses import dataclass, field
 
 from lsl_tools.model import Diagnostic, Node, ParseResult, Span, Token
+from lsl_tools.navigate import definition as find_definition
+from lsl_tools.navigate import highlights as find_highlights
+from lsl_tools.navigate import references as find_references
 from lsl_tools.registry import Language, language_for_id
 from lsl_tools.symbols import lsl_symbols, slua_symbols
 
@@ -63,6 +66,12 @@ class Server:
             return _result(request_id, edits)
         if method == "textDocument/hover":
             return _result(request_id, self._hover(params))
+        if method == "textDocument/definition":
+            return _result(request_id, self._definition(params))
+        if method == "textDocument/references":
+            return _result(request_id, self._references(params))
+        if method == "textDocument/documentHighlight":
+            return _result(request_id, self._highlights(params))
         if method == "textDocument/documentSymbol":
             return _result(request_id, self._symbols(params))
         if method == "textDocument/semanticTokens/full":
@@ -142,6 +151,49 @@ class Server:
             }
         ], ""
 
+    def _definition(self, params: dict) -> list[dict]:
+        record = self._record(params)
+        if record is None or record.get("parsed") is None:
+            return []
+        position = params.get("position") or {}
+        found = find_definition(record["parsed"], position.get("line", 0), position.get("character", 0))
+        if found is None:
+            return []
+        origin, binding = found
+        uri = params["textDocument"]["uri"]
+        return [
+            {
+                "originSelectionRange": origin.lsp(),
+                "targetUri": uri,
+                "targetRange": binding.container_span.lsp(),
+                "targetSelectionRange": binding.name_span.lsp(),
+            }
+        ]
+
+    def _references(self, params: dict) -> list[dict]:
+        record = self._record(params)
+        if record is None or record.get("parsed") is None:
+            return []
+        position = params.get("position") or {}
+        include = params.get("context", {}).get("includeDeclaration", True)
+        uri = params["textDocument"]["uri"]
+        return [
+            {"uri": uri, "range": span.lsp()}
+            for span in find_references(
+                record["parsed"], position.get("line", 0), position.get("character", 0), include
+            )
+        ]
+
+    def _highlights(self, params: dict) -> list[dict]:
+        record = self._record(params)
+        if record is None or record.get("parsed") is None:
+            return []
+        position = params.get("position") or {}
+        return [
+            {"range": span.lsp(), "kind": kind}
+            for span, kind in find_highlights(record["parsed"], position.get("line", 0), position.get("character", 0))
+        ]
+
     def _hover(self, params: dict) -> dict | None:
         record = self._record(params)
         if record is None or record["parsed"] is None:
@@ -205,13 +257,16 @@ def _capabilities() -> dict:
             "textDocumentSync": 1,
             "documentFormattingProvider": True,
             "hoverProvider": True,
+            "definitionProvider": True,
+            "referencesProvider": True,
+            "documentHighlightProvider": True,
             "documentSymbolProvider": True,
             "semanticTokensProvider": {
                 "legend": {"tokenTypes": TOKEN_TYPES, "tokenModifiers": []},
                 "full": True,
             },
         },
-        "serverInfo": {"name": "lsl-tools", "version": "0.1.3"},
+        "serverInfo": {"name": "lsl-tools", "version": "0.1.4"},
     }
 
 
