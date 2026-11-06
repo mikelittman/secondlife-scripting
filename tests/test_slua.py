@@ -9,7 +9,7 @@ local function greet(name: string): string
     return "Hello, " .. name
 end
 
-LLEvents:on("state_entry", function()
+LLEvents:on("touch_start", function()
     ll.OwnerSay(greet("world"))
     local v = vector(1, 2, 3)
     if v.x > 0 then
@@ -69,21 +69,33 @@ export type Id = string
 
     def test_lint(self):
         source = """
-LLEvents:on("state_entry", function()
+LLEvents:on("touch_start", function()
     ll.OwnerSay()
     ll.Cloud(vector(0, 0, 1))
     ll.NotReal(1)
+    ll.SetTimerEvent(1)
     llcompat.Say(0, "hi")
+    assert(true)
+    error("x")
     local flag = TRUE
 end)
+LLEvents:on("state_entry", function() end)
 LLEvents:on("not_an_event", function() end)
 """
         result = parse(source)
         self.assertEqual(result.errors, [], [error.message for error in result.errors])
-        codes = {item.code for item in lint(result)}
+        diagnostics = lint(result)
+        codes = {item.code for item in diagnostics}
         self.assertTrue(
-            {"arity", "deprecated-function", "unknown-function", "removed-constant", "unknown-event"} <= codes
+            {"arity", "deprecated-function", "unknown-function", "removed-function", "removed-constant", "unknown-event"}
+            <= codes
         )
+        messages = {item.message for item in diagnostics}
+        self.assertIn("state_entry is not an SLua event", messages)
+        self.assertIn("unknown event not_an_event", messages)
+        self.assertIn("ll.SetTimerEvent is not available in SLua", messages)
+        self.assertTrue(any(item.code == "deprecated-function" and item.message.startswith("llcompat.Say is deprecated") and "Use " not in item.message for item in diagnostics))
+        self.assertFalse(any("assert takes" in item.message or "error takes" in item.message for item in diagnostics))
 
 
 if __name__ == "__main__":

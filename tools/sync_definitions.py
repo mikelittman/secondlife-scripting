@@ -141,14 +141,25 @@ def build_lsl(data: dict) -> dict:
     }
 
 
-def _module_function(info: dict) -> dict:
+def _params(raw) -> list[dict]:
     params = []
-    for param in info.get("parameters") or []:
+    for param in raw or []:
         if not isinstance(param, dict):
             continue
-        params.append({"name": param.get("name") or "", "type": param.get("type") or ""})
+        name = param.get("name") or ""
+        typ = param.get("type") or ""
+        # A trailing `?` means nil is allowed. It does not mean the argument
+        # may be omitted. Omission comes from default-value or optional: true.
+        variadic = name == "..." or str(typ).startswith("...")
+        optional = variadic or param.get("optional") is True or "default-value" in param
+        params.append({"name": name, "type": typ, "optional": optional, "variadic": variadic})
+    return params
+
+
+def _module_function(info: dict) -> dict:
     return {
-        "params": params,
+        "params": _params(info.get("parameters")),
+        "overloads": [_params(item.get("parameters")) for item in info.get("overloads") or [] if isinstance(item, dict)],
         "return": info.get("return-type") or "",
         "tooltip": _tooltip(info.get("comment")),
         "deprecated": _deprecated(info.get("deprecated") or info.get("slua-deprecated")),
@@ -192,15 +203,36 @@ def build_slua(slua: dict, lsl: dict) -> dict:
     modules.setdefault("ll", {"tooltip": "Second Life LSL library.", "functions": {}, "constants": {}})
     modules["ll"]["functions"] = ll_functions
 
+    # lsl_definitions/slua.py generate_ll_modules: every llcompat function is
+    # @deprecated with an empty replacement, including functions removed from ll.
+    # llcompat matches LSL semantics. It is not a rename of ll.
     compat = {}
     for method, info in ll_functions.items():
         compat[method] = {
             **info,
-            "deprecated": {"use": f"ll.{method}", "reason": "llcompat keeps the old LSL-shaped call."},
+            "deprecated": {"use": "", "reason": ""},
             "removed": False,
         }
-    modules.setdefault("llcompat", {"tooltip": "LSL-compatible wrappers.", "functions": {}, "constants": {}})
-    modules["llcompat"]["functions"] = compat
+    for lsl_name, info in lsl["functions"].items():
+        if not info["slua_removed"]:
+            continue
+        method = info["slua_name"]
+        compat[method] = {
+            "lsl_name": lsl_name,
+            "params": [{"name": arg["name"], "type": arg["type"], "optional": False, "variadic": False} for arg in info["arguments"]],
+            "return": info["return"],
+            "tooltip": info["tooltip"],
+            "deprecated": {"use": "", "reason": ""},
+            "removed": False,
+            "sleep": info["sleep"],
+            "energy": info["energy"],
+        }
+    existing = modules.get("llcompat") or {}
+    modules["llcompat"] = {
+        "tooltip": "Like ll, but exactly matches LSL semantics.",
+        "functions": compat,
+        "constants": existing.get("constants") or {},
+    }
 
     globals_ = []
     for item in slua.get("global-variables") or []:

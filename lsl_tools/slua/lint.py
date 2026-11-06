@@ -1,4 +1,11 @@
-"""SLua lint rules. Severities live in languages/slua/lint.toml."""
+"""SLua lint rules. Severities live in languages/slua/lint.toml.
+
+Syntax is Luau. Library checks follow secondlife/lsl-definitions, in particular
+lsl_definitions/slua.py generate_ll_modules: slua-removed functions stay off ll,
+llcompat functions are deprecated with no replacement, and slua-removed events
+are not LLEventName values. A `?` in a Luau type allows nil. Only default-value
+or optional: true means the argument may be left out.
+"""
 
 from __future__ import annotations
 
@@ -24,7 +31,7 @@ def lint(result: ParseResult, rules: dict[str, str] | None = None) -> list[Diagn
     modules = symbols["modules"]
     builtins = {item["name"]: item for item in symbols.get("builtins", [])}
     removed = set(symbols.get("removed_constants") or [])
-    events = set(symbols.get("events") or {})
+    events = symbols.get("events") or {}
 
     def report(code: str, fallback: str, message: str, node: Node) -> None:
         severity = configured.get(code, fallback)
@@ -80,19 +87,73 @@ def _call(node: Node, modules: dict, builtins: dict, report) -> None:
 def _function_info(label: str, info: dict, args: list[Node], node: Node, report) -> None:
     if info.get("removed"):
         report("removed-function", "warning", f"{label} is not available in SLua", node)
+        return
     deprecated = info.get("deprecated")
     if deprecated:
         extra = f" Use {deprecated['use']}." if deprecated.get("use") else ""
         reason = f" {deprecated['reason']}" if deprecated.get("reason") else ""
         report("deprecated-function", "warning", f"{label} is deprecated.{reason}{extra}", node)
-    params = info.get("params") or []
-    if any(param.get("name") == "..." or "..." in str(param.get("type", "")) for param in params):
-        return
-    if params and len(args) != len(params):
-        report("arity", "error", f"{label} takes {len(params)} argument(s), not {len(args)}", node)
+    signatures = [info.get("params") or []]
+    signatures.extend(info.get("overloads") or [])
+    if not any(_accepts(signature, len(args)) for signature in signatures):
+        report("arity", "error", f"{label} takes {_arity_text(signatures)}, not {len(args)}", node)
 
 
-def _method(node: Node, events: set[str], report) -> None:
+def _accepts(params: list[dict], nargs: int) -> bool:
+    required = 0
+    fixed = 0
+    variadic = False
+    optional_started = False
+    for param in params:
+        name = param.get("name") or ""
+        typ = str(param.get("type") or "")
+        if name == "self":
+            continue
+        if param.get("variadic") or name == "..." or typ.startswith("..."):
+            variadic = True
+            continue
+        fixed += 1
+        if optional_started or param.get("optional"):
+            optional_started = True
+            continue
+        required += 1
+    if nargs < required:
+        return False
+    if variadic:
+        return True
+    return nargs <= fixed
+
+
+def _arity_text(signatures: list[list[dict]]) -> str:
+    counts = []
+    for signature in signatures:
+        required = 0
+        fixed = 0
+        variadic = False
+        optional_started = False
+        for param in signature:
+            name = param.get("name") or ""
+            typ = str(param.get("type") or "")
+            if name == "self":
+                continue
+            if param.get("variadic") or name == "..." or typ.startswith("..."):
+                variadic = True
+                continue
+            fixed += 1
+            if optional_started or param.get("optional"):
+                optional_started = True
+            else:
+                required += 1
+        if variadic:
+            counts.append(f"at least {required}")
+        elif required != fixed:
+            counts.append(f"{required} to {fixed}")
+        else:
+            counts.append(str(required))
+    return " or ".join(counts) + " argument(s)"
+
+
+def _method(node: Node, events: dict, report) -> None:
     obj = node.get("object")
     if obj is None or obj.kind != "identifier" or obj.get("name") != "LLEvents":
         return
@@ -106,5 +167,9 @@ def _method(node: Node, events: set[str], report) -> None:
         name = raw[1:-1]
     else:
         name = raw
-    if name not in events:
+    info = events.get(name)
+    if info is None:
         report("unknown-event", "warning", f"unknown event {name}", args[0])
+        return
+    if info.get("slua_removed"):
+        report("unknown-event", "warning", f"{name} is not an SLua event", args[0])
